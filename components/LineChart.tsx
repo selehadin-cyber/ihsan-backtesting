@@ -19,8 +19,7 @@ const LineChart = () => {
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<any[]>([]);
   const [capital, setCapital] = useState(100000);
-  /*   const [stockAtHand, setStockAtHand] = useState(0)
-   */ let transaction = "sell" as Transaction;
+  let transaction = "sell" as Transaction;
 
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -32,7 +31,7 @@ const LineChart = () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
       let stockAtHand = 0;
       for (let item of rsiArray) {
-        if (item.rsi < 30 && transaction === "sell") {
+        if (item.rsi < 35 && transaction === "sell") {
           transaction = "buy";
           const stockPrice = transformedArray.find(
             (e) => e.date === item.date
@@ -140,7 +139,7 @@ const LineChart = () => {
     } as RequestInit;
 
     fetch(
-      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=AAPL&apikey=ICV6WZMUWQ7GJRGV",
+      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=SQ&apikey=ICV6WZMUWQ7GJRGV",
       requestOptions
     )
       .then((response) => response.text())
@@ -154,7 +153,7 @@ const LineChart = () => {
             close: parseInt(initial[key]["4. close"]),
           });
         }
-        setTransformedArray(newArray);
+        setTransformedArray(newArray.reverse());
       })
       .catch((error) => console.log("error", error));
   }, []);
@@ -203,7 +202,10 @@ const LineChart = () => {
       .attr("stroke", "steelblue");
 
     // Create the x and y axes
-    const xAxis = d3.axisBottom(xScale);
+    const xAxis = d3.axisBottom(xScale)
+    .ticks(d3.timeMonth.every(1))
+    .tickFormat(d3.timeFormat('%b %Y'))
+    .tickSizeOuter(0);
     const yAxis = d3.axisLeft(yScale);
 
     // Append the axes to the SVG
@@ -218,7 +220,7 @@ const LineChart = () => {
       .call(yAxis);
 
     rsiArray.forEach((d) => {
-      if (d.rsi < 30 && transaction == "sell") {
+      if (d.rsi < 35 && transaction == "sell") {
         transaction = "buy";
         svg
           .append("circle")
@@ -255,7 +257,7 @@ const LineChart = () => {
       <p>total balance {formatter.format(capital)}</p>
       <button onClick={handleButtonClick}>run backtesting</button>
       <svg ref={svgRef} />
-      <div>{JSON.stringify(transformedArray)}</div>
+      {/* <div>{JSON.stringify(transformedArray)}</div> */}
     </>
   );
 };
