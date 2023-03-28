@@ -19,6 +19,7 @@ const LineChart = () => {
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<any[]>([]);
   const [capital, setCapital] = useState(100000);
+  const [currentCapital, setCurrentCapital] = useState(0)
   let transaction = "sell" as Transaction;
 
   const formatter = new Intl.NumberFormat("en-US", {
@@ -38,8 +39,8 @@ const LineChart = () => {
           )!.close;
           stockAtHand = capital / stockPrice;
           console.log("cap divided by price", capital / stockPrice);
-          setCapital(0); // Empty the capital
-          setCapital(stockAtHand * stockPrice); // Update the capital with the bought stocks
+          //setCapital(0); // Empty the capital
+          setCurrentCapital(stockAtHand * stockPrice); // Update the capital with the bought stocks
           console.log(
             "buy command",
             item.date,
@@ -52,7 +53,7 @@ const LineChart = () => {
             (e) => e.date === item.date
           )!.close;
           /*           setCapital(0); // Empty the capital
-           */ setCapital(stockAtHand * stockPrice); // Update the capital with the sold stocks
+           */ setCurrentCapital(stockAtHand * stockPrice); // Update the capital with the sold stocks
           console.log(
             "stocks available",
             stockAtHand,
@@ -139,7 +140,7 @@ const LineChart = () => {
     } as RequestInit;
 
     fetch(
-      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=SQ&apikey=ICV6WZMUWQ7GJRGV",
+      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=TSLA&apikey=ICV6WZMUWQ7GJRGV",
       requestOptions
     )
       .then((response) => response.text())
@@ -206,7 +207,9 @@ const LineChart = () => {
     .ticks(d3.timeMonth.every(1))
     .tickFormat(d3.timeFormat('%b %Y'))
     .tickSizeOuter(0);
-    const yAxis = d3.axisLeft(yScale);
+    const yAxis = d3.axisRight(yScale)
+        .tickSize(w)
+    
 
     // Append the axes to the SVG
     d3.select(svgRef.current)
@@ -217,7 +220,16 @@ const LineChart = () => {
     d3.select(svgRef.current)
       .append("g")
       .attr('transform',`translate(${p},${-p})`)
-      .call(yAxis);
+      .call(yAxis)
+      .call(g => g.select(".domain")
+        .remove())
+    .call(g => g.selectAll(".tick:not(:first-of-type) line")
+        .attr("stroke-opacity", 0.5)
+        .attr("stroke-dasharray", "2,2"))
+    .call(g => g.selectAll(".tick text")
+        .attr("x", 4)
+        .attr("dy", -4));
+
 
     rsiArray.forEach((d) => {
       if (d.rsi < 35 && transaction == "sell") {
@@ -254,7 +266,9 @@ const LineChart = () => {
 
   return (
     <>
-      <p>total balance {formatter.format(capital)}</p>
+      <p>Initial balance {formatter.format(capital)}</p>
+      <p>Current Balance {formatter.format(currentCapital)}</p>
+      <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
       <button onClick={handleButtonClick}>run backtesting</button>
       <svg ref={svgRef} />
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
