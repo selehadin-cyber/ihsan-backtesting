@@ -19,7 +19,8 @@ const LineChart = () => {
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<any[]>([]);
   const [capital, setCapital] = useState(100000);
-  const [currentCapital, setCurrentCapital] = useState(0)
+  const [currentCapital, setCurrentCapital] = useState(0);
+  const [maxDrowDown, setMaxDrowDown] = useState(0);
   let transaction = "sell" as Transaction;
 
   const formatter = new Intl.NumberFormat("en-US", {
@@ -28,10 +29,33 @@ const LineChart = () => {
     minimumFractionDigits: 2,
   });
 
+  const calculateDrawDown = () => {};
+
   const BuyOrSale = () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
       let stockAtHand = 0;
+      let lowestPoint:number = 1000000;
+      let highestPoint = 0;
+      let drawDown = 0;
+      let maxDrawDown = maxDrowDown;
       for (let item of rsiArray) {
+        if (transaction === "buy") {
+          const price = transformedArray.find(
+            (e) => e.date === item.date
+          )!.close;
+
+          if (price > highestPoint) {
+            highestPoint = price;
+          } else if (price < lowestPoint!) {
+            lowestPoint = price;
+          }
+          console.log("highp", highestPoint, "lowp", lowestPoint!)
+          let currentDrawDown = (lowestPoint! - highestPoint) / highestPoint * 100;
+          console.log(currentDrawDown)
+        drawDown = Math.min(drawDown, currentDrawDown); // update the current drawdown
+        maxDrawDown = Math.min(maxDrawDown, currentDrawDown); // update the max drawdown
+        setMaxDrowDown(maxDrawDown);
+        }
         if (item.rsi < 35 && transaction === "sell") {
           transaction = "buy";
           const stockPrice = transformedArray.find(
@@ -173,16 +197,17 @@ const LineChart = () => {
       .style("background", "#d3d3d3")
       .style("margin-top", "50px");
 
-    const xMin = d3.min(transformedArray, d => {
+    const xMin = d3.min(transformedArray, (d) => {
       return new Date(d.date);
     });
 
-    const xMax = d3.max(transformedArray, d => {
+    const xMax = d3.max(transformedArray, (d) => {
       return new Date(d.date);
     });
-    console.log("xmin", xMin)
+    console.log("xmin", xMin);
 
-    const xScale =d3.scaleTime()
+    const xScale = d3
+      .scaleTime()
       .domain([xMin, xMax])
       .range([0 + p, w - p]);
     const yScale = d3
@@ -203,13 +228,12 @@ const LineChart = () => {
       .attr("stroke", "steelblue");
 
     // Create the x and y axes
-    const xAxis = d3.axisBottom(xScale)
-    .ticks(d3.timeMonth.every(1))
-    .tickFormat(d3.timeFormat('%b %Y'))
-    .tickSizeOuter(0);
-    const yAxis = d3.axisRight(yScale)
-        .tickSize(w)
-    
+    const xAxis = d3
+      .axisBottom(xScale)
+      .ticks(d3.timeMonth.every(1))
+      .tickFormat(d3.timeFormat("%b %Y"))
+      .tickSizeOuter(0);
+    const yAxis = d3.axisRight(yScale).tickSize(w);
 
     // Append the axes to the SVG
     d3.select(svgRef.current)
@@ -219,17 +243,24 @@ const LineChart = () => {
 
     d3.select(svgRef.current)
       .append("g")
-      .attr('transform',`translate(${p},${-p})`)
+      .attr("transform", `translate(${p},${-p})`)
       .call(yAxis)
-      .call(g => g.select(".domain")
-        .remove())
-    .call(g => g.selectAll(".tick:not(:first-of-type) line")
-        .attr("stroke-opacity", 0.5)
-        .attr("stroke-dasharray", "2,2"))
-    .call(g => g.selectAll(".tick text")
-        .attr("x", 4)
-        .attr("dy", -4));
-
+      .call((g) => g.select(".domain").remove())
+      .call((g) =>
+        g
+          .selectAll(".tick line")
+          .clone()
+          .attr("x2", w - p - p)
+          .attr("stroke-opacity", 0.1)
+      )
+      .call((g) =>
+        g
+          .selectAll(".tick text")
+          .attr("x", -20)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+      );
 
     rsiArray.forEach((d) => {
       if (d.rsi < 35 && transaction == "sell") {
@@ -269,6 +300,7 @@ const LineChart = () => {
       <p>Initial balance {formatter.format(capital)}</p>
       <p>Current Balance {formatter.format(currentCapital)}</p>
       <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
+      <p>Maximum Drawdown {maxDrowDown}</p>
       <button onClick={handleButtonClick}>run backtesting</button>
       <svg ref={svgRef} />
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
