@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import * as d3 from "d3";
 import { curveCardinal } from "d3";
+import tickers from "../tickers.json";
 
 interface Data {
   date: string;
@@ -15,6 +16,7 @@ interface Transformed {
 
 const LineChart = () => {
   const svgRef = useRef<SVGSVGElement>(null);
+  const [ticker, setTicker] = useState("AAPL");
   const [fetchedData, setFetchedData] = useState<string>();
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<any[]>([]);
@@ -34,7 +36,7 @@ const LineChart = () => {
   const BuyOrSale = () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
       let stockAtHand = 0;
-      let lowestPoint:number = 1000000;
+      let lowestPoint: number = 1000000;
       let highestPoint = 0;
       let drawDown = 0;
       let maxDrawDown = maxDrowDown;
@@ -49,12 +51,13 @@ const LineChart = () => {
           } else if (price < lowestPoint!) {
             lowestPoint = price;
           }
-          console.log("highp", highestPoint, "lowp", lowestPoint!)
-          let currentDrawDown = (lowestPoint! - highestPoint) / highestPoint * 100;
-          console.log(currentDrawDown)
-        drawDown = Math.min(drawDown, currentDrawDown); // update the current drawdown
-        maxDrawDown = Math.min(maxDrawDown, currentDrawDown); // update the max drawdown
-        setMaxDrowDown(maxDrawDown);
+          console.log("highp", highestPoint, "lowp", lowestPoint!);
+          let currentDrawDown =
+            ((lowestPoint! - highestPoint) / highestPoint) * 100;
+          console.log(currentDrawDown);
+          drawDown = Math.min(drawDown, currentDrawDown); // update the current drawdown
+          maxDrawDown = Math.min(maxDrawDown, currentDrawDown); // update the max drawdown
+          setMaxDrowDown(maxDrawDown);
         }
         if (item.rsi < 35 && transaction === "sell") {
           transaction = "buy";
@@ -164,7 +167,7 @@ const LineChart = () => {
     } as RequestInit;
 
     fetch(
-      "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=TSLA&apikey=ICV6WZMUWQ7GJRGV",
+      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&apikey=ICV6WZMUWQ7GJRGV`,
       requestOptions
     )
       .then((response) => response.text())
@@ -181,7 +184,7 @@ const LineChart = () => {
         setTransformedArray(newArray.reverse());
       })
       .catch((error) => console.log("error", error));
-  }, []);
+  }, [ticker]);
 
   const drawGraph = (
     transformedArray: Data[],
@@ -233,7 +236,7 @@ const LineChart = () => {
       .ticks(d3.timeMonth.every(1))
       .tickFormat(d3.timeFormat("%b %Y"))
       .tickSizeOuter(0);
-    const yAxis = d3.axisRight(yScale).tickSize(w);
+    const yAxis = d3.axisRight(yScale).ticks(h / 50);
 
     // Append the axes to the SVG
     d3.select(svgRef.current)
@@ -297,6 +300,12 @@ const LineChart = () => {
 
   return (
     <>
+      <input type="text" />
+      <div>
+        {tickers.slice(0, 5).map((e) => (
+          <p onClick={() => setTicker(e.symbol)}>{e.name}</p>
+        ))}
+      </div>
       <p>Initial balance {formatter.format(capital)}</p>
       <p>Current Balance {formatter.format(currentCapital)}</p>
       <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
