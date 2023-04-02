@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState, useMemo } from "react";
 import tickers from "../tickers.json";
 import drawGraph from "../utilities/drawGraph";
 
-interface Data {
+export interface Data {
   date: string;
   close: number;
 }
@@ -110,8 +110,8 @@ const LineChart = () => {
   useEffect(() => {
     const calculateRSI = () => {
       const RSI_PERIOD = 14;
-      const changes = [];
-      let prevClose = null;
+      const changes = [] as any[];
+      let prevClose = null as any;
 
       transformedArray.forEach((item, i) => {
         if (i >= RSI_PERIOD) {
@@ -136,7 +136,7 @@ const LineChart = () => {
       let prevAvgGain = gainSum / RSI_PERIOD;
       let prevAvgLoss = lossSum / RSI_PERIOD;
 
-      const newRsiArray = [];
+      const newRsiArray = [] as any[];
 
       transformedArray.slice(RSI_PERIOD).forEach((item, i) => {
         const change = changes[i];

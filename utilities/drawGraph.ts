@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { curveCardinal } from "d3";
-import { Transaction } from "../components/LineChart";
+import { Data, Transaction } from "../components/LineChart";
 let transaction = "sell"
 
 const drawGraph = (
@@ -33,11 +33,11 @@ const drawGraph = (
 
     const xScale = d3
       .scaleTime()
-      .domain([xMin, xMax])
+      .domain([xMin, xMax] as Date[])
       .range([0 + p, w - p]);
     const yScale = d3
       .scaleLinear()
-      .domain([0, d3.max(transformedArray, (d) => d.close + 20)])
+      .domain([0, d3.max(transformedArray, (d) => d.close + 20)] as any[])
       .range([h, 0]);
 
     const line = d3
@@ -48,7 +48,7 @@ const drawGraph = (
 
     svg
       .append("path")
-      .attr("d", line(transformedArray))
+      .attr("d", line(transformedArray as any))
       .attr("fill", "none")
       .attr("stroke", "steelblue");
 
@@ -56,7 +56,7 @@ const drawGraph = (
     const xAxis = d3
       .axisBottom(xScale)
       .ticks(d3.timeMonth.every(1))
-      .tickFormat(d3.timeFormat("%b %Y"))
+      .tickFormat(d3.timeFormat("%b %Y") as any)
       .tickSizeOuter(0);
     const yAxis = d3.axisRight(yScale).ticks(h / 50);
 
