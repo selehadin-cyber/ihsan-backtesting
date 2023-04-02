@@ -1,14 +1,18 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
-import * as d3 from "d3";
-import { curveCardinal } from "d3";
 import tickers from "../tickers.json";
+import drawGraph from "../utilities/drawGraph";
 
 interface Data {
   date: string;
   close: number;
 }
 
-type Transaction = "buy" | "sell";
+interface Ticker {
+  symbol: string;
+  name: string;
+}
+
+export type Transaction = "buy" | "sell";
 interface Transformed {
   date: string;
   close: number;
@@ -17,6 +21,7 @@ interface Transformed {
 const LineChart = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [ticker, setTicker] = useState("AAPL");
+  const [search, setSearch] = useState("");
   const [fetchedData, setFetchedData] = useState<string>();
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<any[]>([]);
@@ -186,132 +191,45 @@ const LineChart = () => {
       .catch((error) => console.log("error", error));
   }, [ticker]);
 
-  const drawGraph = (
-    transformedArray: Data[],
-    rsiArray: { date: string; rsi: number }[]
-  ) => {
-    const h = 400;
-    const w = 640;
-    const p = 27;
-    const svg = d3
-      .select(svgRef.current)
-      .attr("width", w)
-      .attr("height", h)
-      .style("background", "#d3d3d3")
-      .style("margin-top", "50px");
 
-    const xMin = d3.min(transformedArray, (d) => {
-      return new Date(d.date);
-    });
-
-    const xMax = d3.max(transformedArray, (d) => {
-      return new Date(d.date);
-    });
-    console.log("xmin", xMin);
-
-    const xScale = d3
-      .scaleTime()
-      .domain([xMin, xMax])
-      .range([0 + p, w - p]);
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(transformedArray, (d) => d.close + 20)])
-      .range([h, 0]);
-
-    const line = d3
-      .line()
-      .x((d: any) => xScale(new Date(d.date)) as any)
-      .y((d: any) => yScale(d.close))
-      .curve(curveCardinal);
-
-    svg
-      .append("path")
-      .attr("d", line(transformedArray))
-      .attr("fill", "none")
-      .attr("stroke", "steelblue");
-
-    // Create the x and y axes
-    const xAxis = d3
-      .axisBottom(xScale)
-      .ticks(d3.timeMonth.every(1))
-      .tickFormat(d3.timeFormat("%b %Y"))
-      .tickSizeOuter(0);
-    const yAxis = d3.axisRight(yScale).ticks(h / 50);
-
-    // Append the axes to the SVG
-    d3.select(svgRef.current)
-      .append("g")
-      .attr("transform", `translate(0, ${h - p})`)
-      .call(xAxis);
-
-    d3.select(svgRef.current)
-      .append("g")
-      .attr("transform", `translate(${p},${-p})`)
-      .call(yAxis)
-      .call((g) => g.select(".domain").remove())
-      .call((g) =>
-        g
-          .selectAll(".tick line")
-          .clone()
-          .attr("x2", w - p - p)
-          .attr("stroke-opacity", 0.1)
-      )
-      .call((g) =>
-        g
-          .selectAll(".tick text")
-          .attr("x", -20)
-          .attr("y", 10)
-          .attr("fill", "currentColor")
-          .attr("text-anchor", "start")
-      );
-
-    rsiArray.forEach((d) => {
-      if (d.rsi < 35 && transaction == "sell") {
-        transaction = "buy";
-        svg
-          .append("circle")
-          .attr("cx", xScale(new Date(d.date)) as any)
-          .attr(
-            "cy",
-            yScale(transformedArray.find((e) => e.date === d.date)!.close)
-          )
-          .attr("r", 5)
-          .style("fill", "green");
-      } else if (d.rsi > 60 && transaction == "buy") {
-        transaction = "sell";
-        svg
-          .append("circle")
-          .attr("cx", xScale(new Date(d.date)) as any)
-          .attr(
-            "cy",
-            yScale(transformedArray.find((e) => e.date === d.date)!.close)
-          )
-          .attr("r", 5)
-          .style("fill", "red");
-      }
-    });
-  };
 
   useEffect(() => {
     if (transformedArray.length === 0 || rsiArray.length === 0) return;
 
-    drawGraph(transformedArray, rsiArray);
+    drawGraph(transformedArray, rsiArray, svgRef);
   }, [transformedArray, rsiArray]);
+
+  const clickedOnSuggestion = (e: Ticker) => {
+    setTicker(e.symbol);
+    setSearch("");
+  };
 
   return (
     <>
-      <input type="text" />
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
       <div>
-        {tickers.slice(0, 5).map((e) => (
-          <p onClick={() => setTicker(e.symbol)}>{e.name}</p>
-        ))}
+        {search
+          ? tickers
+              .filter(
+                (e) => e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+              )
+              .map((e: Ticker) => (
+                <p onClick={() => clickedOnSuggestion(e)}>{e.name}</p>
+              ))
+          : null}
       </div>
       <p>Initial balance {formatter.format(capital)}</p>
       <p>Current Balance {formatter.format(currentCapital)}</p>
       <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
       <p>Maximum Drawdown {maxDrowDown}</p>
       <button onClick={handleButtonClick}>run backtesting</button>
-      <svg ref={svgRef} />
+      <div className="border border-black rounded-lg p-1">
+        <svg ref={svgRef} />
+      </div>
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
     </>
   );
