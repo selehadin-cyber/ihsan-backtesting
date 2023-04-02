@@ -2,12 +2,13 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import LineChart from '../components/LineChart'
+import { Navbar } from '../components/Navbar'
 
 const Home: NextPage = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center py-2">
       <Head>
-        <title>Create Next App</title>
+        <title>Ihsan Backtesting Tool</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -18,6 +19,8 @@ const Home: NextPage = () => {
             Next.js!
           </a>
         </h1> */}
+        {/* To-do create a minimalist navbar */}
+        <Navbar />
         <LineChart />
         
       </main>

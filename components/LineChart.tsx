@@ -12,6 +12,11 @@ interface Ticker {
   name: string;
 }
 
+interface RsiData {
+  date: string;
+  rsi: number;
+}
+
 export type Transaction = "buy" | "sell";
 interface Transformed {
   date: string;
@@ -24,7 +29,7 @@ const LineChart = () => {
   const [search, setSearch] = useState("");
   const [fetchedData, setFetchedData] = useState<string>();
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
-  const [rsiArray, setRsiArray] = useState<any[]>([]);
+  const [rsiArray, setRsiArray] = useState<RsiData[]>([]);
   const [capital, setCapital] = useState(100000);
   const [currentCapital, setCurrentCapital] = useState(0);
   const [maxDrowDown, setMaxDrowDown] = useState(0);
@@ -35,8 +40,6 @@ const LineChart = () => {
     currency: "USD",
     minimumFractionDigits: 2,
   });
-
-  const calculateDrawDown = () => {};
 
   const BuyOrSale = () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
@@ -179,7 +182,7 @@ const LineChart = () => {
       .then((result) => {
         setFetchedData(result);
         const initial = JSON.parse(result)["Time Series (Daily)"];
-        const newArray = [] as any[];
+        const newArray = [] as Data[];
         for (const [key, value] of Object.entries(initial)) {
           newArray.push({
             date: key,
@@ -225,7 +228,7 @@ const LineChart = () => {
       <p>Initial balance {formatter.format(capital)}</p>
       <p>Current Balance {formatter.format(currentCapital)}</p>
       <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
-      <p>Maximum Drawdown {maxDrowDown}</p>
+      <p>Maximum Drawdown {maxDrowDown.toFixed(2)+"%"}</p>
       <button onClick={handleButtonClick}>run backtesting</button>
       <div className="border border-black rounded-lg p-1">
         <svg ref={svgRef} />
