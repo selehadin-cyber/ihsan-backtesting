@@ -37,7 +37,12 @@ const drawGraph = (
       .range([0 + p, w - p]);
     const yScale = d3
       .scaleLinear()
-      .domain([0, d3.max(transformedArray, (d) => d.close + 20)] as any[])
+      .domain([0, d3.max(transformedArray, (d) => d.close)] as any[])
+      .range([h, 0]);
+
+    const yScale2 = d3
+      .scaleLinear()
+      .domain([0, d3.max(rsiArray, (d) => d.rsi)] as any[])
       .range([h, 0]);
 
     const line = d3
@@ -46,11 +51,23 @@ const drawGraph = (
       .y((d: any) => yScale(d.close))
       .curve(curveCardinal);
 
+    const rsiLine = d3
+      .line()
+      .x((d: any) => xScale(new Date(d.date)) as any)
+      .y((d: any) => yScale2(d.rsi))
+      .curve(curveCardinal);
+    
     svg
       .append("path")
       .attr("d", line(transformedArray as any))
       .attr("fill", "none")
       .attr("stroke", "steelblue");
+
+    svg
+      .append("path")
+      .attr("d", rsiLine(rsiArray as any))
+      .attr("fill", "none")
+      .attr("stroke", "red");
 
     // Create the x and y axes
     const xAxis = d3
@@ -59,6 +76,8 @@ const drawGraph = (
       .tickFormat(d3.timeFormat("%b %Y") as any)
       .tickSizeOuter(0);
     const yAxis = d3.axisRight(yScale).ticks(h / 50);
+    const yAxis2 = d3.axisRight(yScale2).ticks(h / 50);
+
 
     // Append the axes to the SVG
     d3.select(ref.current)
@@ -68,7 +87,12 @@ const drawGraph = (
 
     d3.select(ref.current)
       .append("g")
-      .attr("transform", `translate(${p},${-p})`)
+      .attr("transform", `translate(${w - p}, 0)`)
+      .call(yAxis2);
+
+    d3.select(ref.current)
+      .append("g")
+      .attr("transform", `translate(${p},${-0})`)
       .call(yAxis)
       .call((g) => g.select(".domain").remove())
       .call((g) =>

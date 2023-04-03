@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
 import tickers from "../tickers.json";
+import { calculateRSI } from "../utilities/calculateRSI";
 import drawGraph from "../utilities/drawGraph";
 
 export interface Data {
@@ -111,62 +112,10 @@ const LineChart = () => {
   };
 
   useEffect(() => {
-    const calculateRSI = () => {
-      const RSI_PERIOD = 14;
-      const changes = [] as any[];
-      let prevClose = null as any;
-
-      transformedArray.forEach((item, i) => {
-        if (i >= RSI_PERIOD) {
-          const change = item.close - prevClose;
-          changes.push(change);
-        }
-        prevClose = item.close;
-      });
-
-      let gainSum = 0;
-      let lossSum = 0;
-
-      for (let i = 0; i < RSI_PERIOD; i++) {
-        const change = changes[i];
-        if (change >= 0) {
-          gainSum += change;
-        } else {
-          lossSum -= change;
-        }
-      }
-
-      let prevAvgGain = gainSum / RSI_PERIOD;
-      let prevAvgLoss = lossSum / RSI_PERIOD;
-
-      const newRsiArray = [] as any[];
-
-      transformedArray.slice(RSI_PERIOD).forEach((item, i) => {
-        const change = changes[i];
-        let avgGain = null;
-        let avgLoss = null;
-
-        if (change >= 0) {
-          avgGain = (prevAvgGain * (RSI_PERIOD - 1) + change) / RSI_PERIOD;
-          avgLoss = (prevAvgLoss * (RSI_PERIOD - 1)) / RSI_PERIOD;
-        } else {
-          avgGain = (prevAvgGain * (RSI_PERIOD - 1)) / RSI_PERIOD;
-          avgLoss = (prevAvgLoss * (RSI_PERIOD - 1) - change) / RSI_PERIOD;
-        }
-
-        prevAvgGain = avgGain;
-        prevAvgLoss = avgLoss;
-
-        const rs = prevAvgGain / prevAvgLoss;
-        const rsi = 100 - 100 / (1 + rs);
-
-        newRsiArray.push({ date: item.date, rsi });
-      });
-
-      setRsiArray(newRsiArray);
-    };
-    calculateRSI();
+    const rsi = calculateRSI(transformedArray);
+    setRsiArray(rsi)
   }, [transformedArray]);
+
   console.log("rsi", rsiArray);
   useEffect(() => {
     var requestOptions = {
@@ -209,29 +158,33 @@ const LineChart = () => {
 
   return (
     <>
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
-      <div>
-        {search
-          ? tickers
-              .filter(
-                (e) => e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
-              )
-              .map((e: Ticker) => (
-                <p onClick={() => clickedOnSuggestion(e)}>{e.name}</p>
-              ))
-          : null}
-      </div>
-      <p>Initial balance {formatter.format(capital)}</p>
-      <p>Current Balance {formatter.format(currentCapital)}</p>
-      <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
-      <p>Maximum Drawdown {maxDrowDown.toFixed(2)+"%"}</p>
-      <button onClick={handleButtonClick}>run backtesting</button>
-      <div className="border border-black rounded-lg p-1">
-        <svg ref={svgRef} />
+      <div className="container flex flex-row-reverse items-center justify-center">
+        <div className="right">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <div>
+            {search
+              ? tickers
+                  .filter(
+                    (e) => e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+                  )
+                  .map((e: Ticker) => (
+                    <p onClick={() => clickedOnSuggestion(e)}>{e.name}</p>
+                  ))
+              : null}
+          </div>
+          <p>Initial balance {formatter.format(capital)}</p>
+          <p>Current Balance {formatter.format(currentCapital)}</p>
+          <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
+          <p>Maximum Drawdown {maxDrowDown.toFixed(2)+"%"}</p>
+          <button onClick={handleButtonClick}>run backtesting</button>
+        </div>
+        <div className="border border-black rounded-lg p-1">
+          <svg ref={svgRef} />
+        </div>
       </div>
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
     </>
