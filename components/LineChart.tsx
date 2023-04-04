@@ -176,6 +176,7 @@ const LineChart = () => {
                   ))
               : null}
           </div>
+          <input type="number" name="capital" id="capital" value={capital} onChange={e => setCapital(parseInt(e.target.value))} />
           <p>Initial balance {formatter.format(capital)}</p>
           <p>Current Balance {formatter.format(currentCapital)}</p>
           <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>

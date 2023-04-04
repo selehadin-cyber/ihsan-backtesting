@@ -38,12 +38,12 @@ const drawGraph = (
     const yScale = d3
       .scaleLinear()
       .domain([0, d3.max(transformedArray, (d) => d.close)] as any[])
-      .range([h, 0]);
+      .range([h - p, 0]);
 
     const yScale2 = d3
       .scaleLinear()
       .domain([0, d3.max(rsiArray, (d) => d.rsi)] as any[])
-      .range([h, 0]);
+      .range([h - p , h / 2]);
 
     const line = d3
       .line()
