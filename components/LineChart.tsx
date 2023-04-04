@@ -113,7 +113,7 @@ const LineChart = () => {
 
   useEffect(() => {
     const rsi = calculateRSI(transformedArray);
-    setRsiArray(rsi)
+    setRsiArray(rsi);
   }, [transformedArray]);
 
   console.log("rsi", rsiArray);
@@ -143,8 +143,6 @@ const LineChart = () => {
       .catch((error) => console.log("error", error));
   }, [ticker]);
 
-
-
   useEffect(() => {
     if (transformedArray.length === 0 || rsiArray.length === 0) return;
 
@@ -169,18 +167,25 @@ const LineChart = () => {
             {search
               ? tickers
                   .filter(
-                    (e) => e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+                    (e) =>
+                      e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
                   )
                   .map((e: Ticker) => (
                     <p onClick={() => clickedOnSuggestion(e)}>{e.name}</p>
                   ))
               : null}
           </div>
-          <input type="number" name="capital" id="capital" value={capital} onChange={e => setCapital(parseInt(e.target.value))} />
+          <input
+            type="number"
+            name="capital"
+            id="capital"
+            value={capital}
+            onChange={(e) => setCapital(parseInt(e.target.value))}
+          />
           <p>Initial balance {formatter.format(capital)}</p>
           <p>Current Balance {formatter.format(currentCapital)}</p>
           <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
-          <p>Maximum Drawdown {maxDrowDown.toFixed(2)+"%"}</p>
+          <p>Maximum Drawdown {maxDrowDown.toFixed(2) + "%"}</p>
           <button onClick={handleButtonClick}>run backtesting</button>
         </div>
         <div className="border border-black rounded-lg p-1">
