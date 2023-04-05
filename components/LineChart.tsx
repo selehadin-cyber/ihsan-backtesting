@@ -156,8 +156,9 @@ const LineChart = () => {
 
   return (
     <>
-      <div className="container flex flex-row-reverse items-center justify-center">
-        <div className="right">
+      <div className="container flex flex-row-reverse items-center justify-center gap-3">
+        <div className="right rounded-lg shadow-xl h-[460px]">
+          <h1>Search a Stock</h1>
           <input
             type="text"
             value={search}
@@ -175,6 +176,7 @@ const LineChart = () => {
                   ))
               : null}
           </div>
+          <h2>Inital investment capital</h2>
           <input
             type="number"
             name="capital"
@@ -188,7 +190,7 @@ const LineChart = () => {
           <p>Maximum Drawdown {maxDrowDown.toFixed(2) + "%"}</p>
           <button onClick={handleButtonClick}>run backtesting</button>
         </div>
-        <div className="border border-black rounded-lg p-1">
+        <div className="border rounded-lg p-1 shadow-xl">
           <svg ref={svgRef} />
         </div>
       </div>
