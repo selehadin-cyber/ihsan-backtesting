@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 import { curveCardinal } from "d3";
-import { Data, Transaction } from "../components/LineChart";
+import { Data, RsiBuyandSellPoints, Transaction } from "../components/LineChart";
 let transaction = "sell"
 
 const drawGraph = (
@@ -8,6 +8,7 @@ const drawGraph = (
     rsiArray: { date: string; rsi: number }[],
     ref: any,
     /* transaction: Transaction */
+    rsiBuyandSellPoints: RsiBuyandSellPoints
   ) => {
     const h = 400;
     const w = 640;
@@ -112,7 +113,7 @@ const drawGraph = (
       );
 
     rsiArray.forEach((d) => {
-      if (d.rsi < 35 && transaction == "sell") {
+      if (d.rsi < rsiBuyandSellPoints.buy && transaction == "sell") {
         transaction = "buy";
         svg
           .append("circle")
@@ -123,7 +124,7 @@ const drawGraph = (
           )
           .attr("r", 5)
           .style("fill", "green");
-      } else if (d.rsi > 60 && transaction == "buy") {
+      } else if (d.rsi > rsiBuyandSellPoints.sell && transaction == "buy") {
         transaction = "sell";
         svg
           .append("circle")

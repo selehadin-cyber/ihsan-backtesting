@@ -3,13 +3,14 @@ import Slider from "@mui/material/Slider";
 import tickers from "../tickers.json";
 import { calculateRSI } from "../utilities/calculateRSI";
 import drawGraph from "../utilities/drawGraph";
+import controlsSection from "./ControlsSection";
 
 export interface Data {
   date: string;
   close: number;
 }
 
-interface Ticker {
+export interface Ticker {
   symbol: string;
   name: string;
 }
@@ -25,6 +26,11 @@ interface Transformed {
   close: number;
 }
 
+export interface RsiBuyandSellPoints{
+  buy: number
+  sell: number
+}
+
 const LineChart = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [ticker, setTicker] = useState("AAPL");
@@ -35,6 +41,15 @@ const LineChart = () => {
   const [capital, setCapital] = useState(100000);
   const [currentCapital, setCurrentCapital] = useState(0);
   const [maxDrowDown, setMaxDrowDown] = useState(0);
+  const [rsiBuyandSellPoints, setRsiBuyandSellPoints] = useState<RsiBuyandSellPoints>({buy: 30, sell: 70});
+
+  const handleChange = (event: Event, newValue: number[]) => {
+    setRsiBuyandSellPoints({buy: newValue[0], sell: newValue[1]} as RsiBuyandSellPoints);
+  };
+
+
+  console.log(rsiBuyandSellPoints)
+
   let transaction = "sell" as Transaction;
 
   const formatter = new Intl.NumberFormat("en-US", {
@@ -69,7 +84,7 @@ const LineChart = () => {
           maxDrawDown = Math.min(maxDrawDown, currentDrawDown); // update the max drawdown
           setMaxDrowDown(maxDrawDown);
         }
-        if (item.rsi < 35 && transaction === "sell") {
+        if (item.rsi < rsiBuyandSellPoints.buy && transaction === "sell") {
           transaction = "buy";
           const stockPrice = transformedArray.find(
             (e) => e.date === item.date
@@ -84,7 +99,7 @@ const LineChart = () => {
             "at a price point of",
             stockPrice
           );
-        } else if (item.rsi > 60 && transaction === "buy") {
+        } else if (item.rsi > rsiBuyandSellPoints.sell && transaction === "buy") {
           transaction = "sell";
           const stockPrice = transformedArray.find(
             (e) => e.date === item.date
@@ -147,8 +162,8 @@ const LineChart = () => {
   useEffect(() => {
     if (transformedArray.length === 0 || rsiArray.length === 0) return;
 
-    drawGraph(transformedArray, rsiArray, svgRef);
-  }, [transformedArray, rsiArray]);
+    drawGraph(transformedArray, rsiArray, svgRef, rsiBuyandSellPoints);
+  }, [transformedArray, rsiArray, rsiBuyandSellPoints]);
 
   const clickedOnSuggestion = (e: Ticker) => {
     setTicker(e.symbol);
@@ -158,57 +173,7 @@ const LineChart = () => {
   return (
     <>
       <div className="container flex flex-row-reverse items-center justify-center gap-3">
-        <div className="right w-1/3 border rounded-lg shadow-xl h-[460px] p-2">
-          <h1>Search a Stock</h1>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full p-2 mr-3 pl-5 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-          />
-          {search !== "" ? (
-            <div className="h-32 overflow-scroll">
-              {tickers
-                .filter(
-                  (e) => e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
-                )
-                .map((e: Ticker) => (
-                  <p
-                    className="px-3 text-start"
-                    onClick={() => clickedOnSuggestion(e)}
-                  >
-                    {e.name}
-                  </p>
-                ))}
-            </div>
-          ) : null}
-          <h2>Inital investment capital</h2>
-          <input
-            type="number"
-            name="capital"
-            id="capital"
-            value={capital}
-            onChange={(e) => setCapital(parseInt(e.target.value))}
-            className="w-full p-2 mr-3 pl-5 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p>Initial balance {formatter.format(capital)}</p>
-          <p>Current Balance {formatter.format(currentCapital)}</p>
-          <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
-          <p>Maximum Drawdown {maxDrowDown.toFixed(2) + "%"}</p>
-          <label
-            htmlFor="medium-range"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Default range
-          </label>
-          <Slider
-            getAriaLabel={() => "Temperature range"}
-            value={[20, 37]}
-            onChange={() => console.log("opaaa")}
-            valueLabelDisplay="auto"
-          />
-          <button onClick={handleButtonClick}>run backtesting</button>
-        </div>
+        {controlsSection(search, setSearch, clickedOnSuggestion, capital, setCapital, formatter, currentCapital, maxDrowDown, handleButtonClick, rsiBuyandSellPoints, handleChange)}
         <div className="border rounded-lg p-1 shadow-xl">
           <svg ref={svgRef} />
         </div>
@@ -219,3 +184,5 @@ const LineChart = () => {
 };
 
 export default LineChart;
+
+
