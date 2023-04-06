@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
+import Slider from "@mui/material/Slider";
 import tickers from "../tickers.json";
 import { calculateRSI } from "../utilities/calculateRSI";
 import drawGraph from "../utilities/drawGraph";
@@ -157,25 +158,30 @@ const LineChart = () => {
   return (
     <>
       <div className="container flex flex-row-reverse items-center justify-center gap-3">
-        <div className="right rounded-lg shadow-xl h-[460px]">
+        <div className="right w-1/3 border rounded-lg shadow-xl h-[460px] p-2">
           <h1>Search a Stock</h1>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="w-full p-2 mr-3 pl-5 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
           />
-          <div>
-            {search
-              ? tickers
-                  .filter(
-                    (e) =>
-                      e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
-                  )
-                  .map((e: Ticker) => (
-                    <p onClick={() => clickedOnSuggestion(e)}>{e.name}</p>
-                  ))
-              : null}
-          </div>
+          {search !== "" ? (
+            <div className="h-32 overflow-scroll">
+              {tickers
+                .filter(
+                  (e) => e.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+                )
+                .map((e: Ticker) => (
+                  <p
+                    className="px-3 text-start"
+                    onClick={() => clickedOnSuggestion(e)}
+                  >
+                    {e.name}
+                  </p>
+                ))}
+            </div>
+          ) : null}
           <h2>Inital investment capital</h2>
           <input
             type="number"
@@ -183,11 +189,24 @@ const LineChart = () => {
             id="capital"
             value={capital}
             onChange={(e) => setCapital(parseInt(e.target.value))}
+            className="w-full p-2 mr-3 pl-5 text-base text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
           />
           <p>Initial balance {formatter.format(capital)}</p>
           <p>Current Balance {formatter.format(currentCapital)}</p>
           <p>Profit/Loss {formatter.format(currentCapital - capital)}</p>
           <p>Maximum Drawdown {maxDrowDown.toFixed(2) + "%"}</p>
+          <label
+            htmlFor="medium-range"
+            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+          >
+            Default range
+          </label>
+          <Slider
+            getAriaLabel={() => "Temperature range"}
+            value={[20, 37]}
+            onChange={() => console.log("opaaa")}
+            valueLabelDisplay="auto"
+          />
           <button onClick={handleButtonClick}>run backtesting</button>
         </div>
         <div className="border rounded-lg p-1 shadow-xl">
