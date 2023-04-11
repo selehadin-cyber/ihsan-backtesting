@@ -5,11 +5,13 @@ import {
   RsiBuyandSellPoints,
   Transaction,
 } from "../components/LineChart";
+import { SmaData } from "./calculateSMA";
 let transaction = "sell";
 
 const drawGraph = (
   transformedArray: Data[],
   rsiArray: { date: string; rsi: number }[],
+  smaArray: SmaData[],
   ref: any,
   /* transaction: Transaction */
   rsiBuyandSellPoints: RsiBuyandSellPoints
@@ -64,12 +66,24 @@ const drawGraph = (
     .y((d: any) => yScale2(d.rsi))
     .curve(curveCardinal);
 
+  const smaLine = d3
+    .line()
+    .x((d: any) => xScale(new Date(d.date)) as any)
+    .y((d: any) => yScale(d.sma))
+    .curve(curveCardinal);
+
   svg
     .append("path")
     .attr("d", line(transformedArray as any))
     .attr("fill", "none")
     .attr("stroke", "steelblue");
 
+    svg
+    .append("path")
+    .attr("d", smaLine(smaArray as any))
+    .attr("fill", "none")
+    .attr("stroke", "green");
+  
   svg
     .append("path")
     .attr("d", rsiLine(rsiArray as any))
