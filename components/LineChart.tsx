@@ -4,6 +4,7 @@ import tickers from "../tickers.json";
 import { calculateRSI } from "../utilities/calculateRSI";
 import drawGraph from "../utilities/drawGraph";
 import controlsSection from "./ControlsSection";
+import { SmaData, calculateSMA } from "../utilities/calculateSMA";
 
 export interface Data {
   date: string;
@@ -38,6 +39,7 @@ const LineChart = () => {
   const [fetchedData, setFetchedData] = useState<string>();
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<RsiData[]>([]);
+  const [smaArray, setSmaArray] = useState<SmaData[]>([])
   const [capital, setCapital] = useState(100000);
   const [currentCapital, setCurrentCapital] = useState(0);
   const [maxDrowDown, setMaxDrowDown] = useState(0);
@@ -132,7 +134,12 @@ const LineChart = () => {
     setRsiArray(rsi);
   }, [transformedArray]);
 
-  console.log("rsi", rsiArray);
+  useEffect(() => {
+    const sma = calculateSMA(transformedArray);
+    setSmaArray(sma);
+    console.log("smaData", smaArray)
+  }, [transformedArray]);
+
   useEffect(() => {
     var requestOptions = {
       method: "GET",
@@ -162,7 +169,7 @@ const LineChart = () => {
   useEffect(() => {
     if (transformedArray.length === 0 || rsiArray.length === 0) return;
 
-    drawGraph(transformedArray, rsiArray, svgRef, rsiBuyandSellPoints);
+    drawGraph(transformedArray, rsiArray, smaArray, svgRef, rsiBuyandSellPoints);
   }, [transformedArray, rsiArray, rsiBuyandSellPoints]);
 
   const clickedOnSuggestion = (e: Ticker) => {
