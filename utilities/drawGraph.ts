@@ -6,6 +6,7 @@ import {
   Transaction,
 } from "../components/LineChart";
 import { SmaData } from "./calculateSMA";
+import { responsivefy } from "./responsivefy";
 let transaction = "sell";
 
 const drawGraph = (
@@ -23,8 +24,10 @@ const drawGraph = (
     .select(ref.current)
     .attr("width", w)
     .attr("height", h)
+    .call(responsivefy)
     .style("background", "white")
-    .style("margin-top", "50px");
+    .style("padding-inline", "4px")
+    .style("margin-top", "4px");
 
   // Remove all child elements of the SVG
   svg.selectAll("*").remove();

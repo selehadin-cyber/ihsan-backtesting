@@ -179,10 +179,12 @@ const LineChart = () => {
 
   return (
     <>
-      <div className="container flex flex-row-reverse items-center justify-center gap-3">
+      <div className="container flex-col-reverse flex lg:flex-row-reverse sm:flex-col-reverse  items-center justify-center gap-3">
         {controlsSection(search, setSearch, clickedOnSuggestion, capital, setCapital, formatter, currentCapital, maxDrowDown, handleButtonClick, rsiBuyandSellPoints, handleChange)}
-        <div className="border rounded-lg p-1 shadow-xl">
-          <svg ref={svgRef} />
+        <div className="border w-full rounded-lg p-1.5 shadow-xl">
+          <div>
+            <svg ref={svgRef} />
+          </div>
         </div>
       </div>
       {/* <div>{JSON.stringify(transformedArray)}</div> */}

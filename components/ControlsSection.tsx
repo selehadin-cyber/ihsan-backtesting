@@ -4,7 +4,7 @@ import { RsiBuyandSellPoints, Ticker } from "./LineChart";
 
 
 export default function ControlsSection(search: string, setSearch: React.Dispatch<React.SetStateAction<string>>, clickedOnSuggestion: (e: Ticker) => void, capital: number, setCapital: React.Dispatch<React.SetStateAction<number>>, formatter: Intl.NumberFormat, currentCapital: number, maxDrowDown: number, handleButtonClick: () => void, rsiBuyandSellPoints: RsiBuyandSellPoints, handleChange: (event: Event, newValue: number[]) => void) {
-    return <div className="right w-1/3 border rounded-lg shadow-xl h-[460px] p-2">
+    return <div className="right w-full lg:w-1/3 sm:w-full border rounded-lg shadow-xl h-[460px] p-2">
       <h1>Search a Stock</h1>
       <input
         type="text"
