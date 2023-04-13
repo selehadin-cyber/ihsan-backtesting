@@ -3,7 +3,7 @@ import React from 'react'
 export const Navbar = () => {
   return (
     <>
-        <ul className='flex gap-4 justify-between w-full'>
+        <ul className='flex gap-4 justify-between w-full px-5 mb-5'>
             <div>
                 <p>IhsanBacktesting</p>
             </div>
