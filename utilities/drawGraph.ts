@@ -7,7 +7,9 @@ import {
 } from "../components/LineChart";
 import { SmaData } from "./calculateSMA";
 import { responsivefy } from "./responsivefy";
-let transaction = "sell";
+import { drawRSIEntryandExit } from "./drawRSIEntryandExit";
+import { drawSMAEntryandExit } from "./drawSMAEntryandExit";
+export let transaction = "sell";
 
 const drawGraph = (
   transformedArray: Data[],
@@ -15,7 +17,8 @@ const drawGraph = (
   smaArray: SmaData[],
   ref: any,
   /* transaction: Transaction */
-  rsiBuyandSellPoints: RsiBuyandSellPoints
+  rsiBuyandSellPoints: RsiBuyandSellPoints,
+  strategy: "SMA" | "RSI"
 ) => {
   const h = 400;
   const w = 640;
@@ -41,7 +44,6 @@ const drawGraph = (
   });
   const yMin = 0;
   const yMax = d3.max(transformedArray, (d) => d.close);
-  console.log("xmin", xMin);
 
   const xScale = d3
     .scaleTime()
@@ -80,18 +82,19 @@ const drawGraph = (
     .attr("d", line(transformedArray as any))
     .attr("fill", "none")
     .attr("stroke", "steelblue");
-
+  if (strategy === "SMA") {
     svg
-    .append("path")
-    .attr("d", smaLine(smaArray as any))
-    .attr("fill", "none")
-    .attr("stroke", "green");
-  
-  svg
-    .append("path")
-    .attr("d", rsiLine(rsiArray as any))
-    .attr("fill", "none")
-    .attr("stroke", "red");
+      .append("path")
+      .attr("d", smaLine(smaArray as any))
+      .attr("fill", "none")
+      .attr("stroke", "green");
+  } else {
+    svg
+      .append("path")
+      .attr("d", rsiLine(rsiArray as any))
+      .attr("fill", "none")
+      .attr("stroke", "red");
+  }
 
   // Create the x and y axes
   const xAxis = d3
@@ -108,10 +111,12 @@ const drawGraph = (
     .attr("transform", `translate(0, ${h - p})`)
     .call(xAxis);
 
-  d3.select(ref.current)
-    .append("g")
-    .attr("transform", `translate(${w - p}, 0)`)
-    .call(yAxis2);
+  if (strategy === "RSI") {
+    d3.select(ref.current)
+      .append("g")
+      .attr("transform", `translate(${w - p}, 0)`)
+      .call(yAxis2);
+  }
 
   d3.select(ref.current)
     .append("g")
@@ -134,31 +139,18 @@ const drawGraph = (
         .attr("text-anchor", "start")
     );
 
-  rsiArray.forEach((d) => {
-    if (d.rsi < rsiBuyandSellPoints.buy && transaction == "sell") {
-      transaction = "buy";
-      svg
-        .append("circle")
-        .attr("cx", xScale(new Date(d.date)) as any)
-        .attr(
-          "cy",
-          yScale(transformedArray.find((e) => e.date === d.date)!.close)
-        )
-        .attr("r", 5)
-        .style("fill", "green");
-    } else if (d.rsi > rsiBuyandSellPoints.sell && transaction == "buy") {
-      transaction = "sell";
-      svg
-        .append("circle")
-        .attr("cx", xScale(new Date(d.date)) as any)
-        .attr(
-          "cy",
-          yScale(transformedArray.find((e) => e.date === d.date)!.close)
-        )
-        .attr("r", 5)
-        .style("fill", "red");
-    }
-  });
+  if (strategy === "SMA") {
+    drawSMAEntryandExit(smaArray, transformedArray, svg, xScale, yScale);
+  } else {
+    drawRSIEntryandExit(
+      rsiArray,
+      rsiBuyandSellPoints,
+      svg,
+      xScale,
+      yScale,
+      transformedArray
+    );
+  }
 
   const tooltip = svg
     .append("g")
