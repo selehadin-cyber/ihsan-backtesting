@@ -15,8 +15,7 @@ const Home: NextPage = () => {
       <Navbar />
       <main className="flex w-full flex-1 flex-col items-center justify-center px-3.5 sm:px-20 text-center">
         {/* To-do create a minimalist navbar */}
-        <LineChart />
-        
+        <LineChart /> 
       </main>
 
       {/* <footer className="flex h-24 w-full items-center justify-center border-t">
