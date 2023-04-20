@@ -77,7 +77,7 @@ const LineChart = () => {
     minimumFractionDigits: 2,
   });
 
-  const BuyOrSaleSMA = () => {
+  const BuyOrSaleSMA = async () => {
     if (transformedArray.length !== 0 && smaArray.length !== 0) {
       let stockAtHand = 0;
       let lowestPoint: number = 1000000;
@@ -118,7 +118,7 @@ const LineChart = () => {
             transformedArray.find((e) => e.date === item.date)!.close
           );
           stockAtHand = localbalance / price;
-          setTransactionsList((e) =>
+          await setTransactionsList((e) =>
             e.concat({
               stock: ticker,
               date: item.date,
@@ -131,7 +131,7 @@ const LineChart = () => {
 
           localbalance = 0;
           console.log("balance divided by price", localbalance / price);
-          setBalance(stockAtHand * price); // Update the capital with the bought stocks
+          await setBalance(stockAtHand * price); // Update the capital with the bought stocks
           console.log("buy command", item.date, "at a price point of", price);
           console.log(
             "current balance(after buy)",
@@ -151,7 +151,7 @@ const LineChart = () => {
           );
           localbalance = stockAtHand * price;
           stockAtHand = 0;
-          setTransactionsList((e) =>
+          await setTransactionsList((e) =>
             e.concat({
               stock: ticker,
               date: item.date,
@@ -161,7 +161,7 @@ const LineChart = () => {
               balance: localbalance,
             })
           );
-          setBalance(localbalance); // Update the capital with the sold stocks
+          await setBalance(localbalance); // Update the capital with the sold stocks
           console.log("sell command", item.date, "at a price point of", price);
           console.log(
             "current balance(after sell)",
@@ -175,7 +175,7 @@ const LineChart = () => {
     }
   };
 
-  const BuyOrSaleRSI = () => {
+  const BuyOrSaleRSI = async () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
       let stockAtHand = 0;
       let lowestPoint: number = 1000000;
@@ -208,7 +208,17 @@ const LineChart = () => {
           stockAtHand = capital / stockPrice;
           console.log("cap divided by price", capital / stockPrice);
           //setCapital(0); // Empty the capital
-          setBalance(stockAtHand * stockPrice); // Update the capital with the bought stocks
+          await setBalance(stockAtHand * stockPrice); // Update the capital with the bought stocks
+          await setTransactionsList((e) =>
+            e.concat({
+              stock: ticker,
+              date: item.date,
+              quantity: stockAtHand,
+              type: "buy",
+              price: transformedArray.find((e) => e.date === item.date)!.close,
+              balance: stockAtHand * stockPrice,
+            })
+          );
           console.log(
             "buy command",
             item.date,
@@ -223,8 +233,20 @@ const LineChart = () => {
           const stockPrice = transformedArray.find(
             (e) => e.date === item.date
           )!.close;
+          setBalance(stockAtHand * stockPrice);
+          await setTransactionsList((e) =>
+          e.concat({
+            stock: ticker,
+            date: item.date,
+            quantity: 0,
+            type: "sell",
+            price: transformedArray.find((e) => e.date === item.date)!.close,
+            balance: stockAtHand * stockPrice,
+          })
+          );
+          stockAtHand = 0 // Update the capital with the sold stocks
           /*           setCapital(0); // Empty the capital
-           */ setBalance(stockAtHand * stockPrice); // Update the capital with the sold stocks
+           */ 
           console.log(
             "stocks available",
             stockAtHand,
@@ -328,9 +350,9 @@ const LineChart = () => {
           <div>
             <svg ref={svgRef} />
           </div>
+      <TransactionsList transactionsList={transactionsList} />
         </div>
       </div>
-      <TransactionsList transactionsList={transactionsList} />
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
     </>
   );
