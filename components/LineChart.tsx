@@ -5,12 +5,20 @@ import { calculateRSI } from "../utilities/calculateRSI";
 import drawGraph from "../utilities/drawGraph";
 import controlsSection from "./ControlsSection";
 import { SmaData, calculateSMA } from "../utilities/calculateSMA";
+import TransactionsList from "./transactionsList";
 
 export interface Data {
   date: string;
   close: number;
 }
-
+export interface Transactions {
+  stock: string;
+  date: string;
+  quantity: number;
+  type: string;
+  price: number;
+  balance: number;
+}
 export interface Ticker {
   symbol: string;
   name: string;
@@ -27,9 +35,9 @@ interface Transformed {
   close: number;
 }
 
-export interface RsiBuyandSellPoints{
-  buy: number
-  sell: number
+export interface RsiBuyandSellPoints {
+  buy: number;
+  sell: number;
 }
 
 const LineChart = () => {
@@ -40,22 +48,26 @@ const LineChart = () => {
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<RsiData[]>([]);
   const [smaArray, setSmaArray] = useState<SmaData[]>([]);
-  const [strategy, setStrategy] = useState<"SMA" | "RSI">("SMA")
+  const [strategy, setStrategy] = useState<"SMA" | "RSI">("SMA");
   const [capital, setCapital] = useState(100000);
   const [balance, setBalance] = useState(100000);
+  const [transactionsList, setTransactionsList] = useState<Transactions[]>([]);
   const [maxDrowDown, setMaxDrowDown] = useState(0);
-  const [rsiBuyandSellPoints, setRsiBuyandSellPoints] = useState<RsiBuyandSellPoints>({buy: 30, sell: 70});
+  const [rsiBuyandSellPoints, setRsiBuyandSellPoints] =
+    useState<RsiBuyandSellPoints>({ buy: 30, sell: 70 });
 
   const handleChange = (event: Event, newValue: number[]) => {
-    setRsiBuyandSellPoints({buy: newValue[0], sell: newValue[1]} as RsiBuyandSellPoints);
+    setRsiBuyandSellPoints({
+      buy: newValue[0],
+      sell: newValue[1],
+    } as RsiBuyandSellPoints);
   };
 
   const handleStrategy = (event: any) => {
-    setStrategy(event.target!.value)
-  }
+    setStrategy(event.target!.value);
+  };
 
-
-  console.log(rsiBuyandSellPoints)
+  console.log(rsiBuyandSellPoints);
 
   let transaction = "sell" as Transaction;
 
@@ -65,7 +77,7 @@ const LineChart = () => {
     minimumFractionDigits: 2,
   });
 
-  const BuyOrSaleSMA = () => {
+  const BuyOrSaleSMA = async () => {
     if (transformedArray.length !== 0 && smaArray.length !== 0) {
       let stockAtHand = 0;
       let lowestPoint: number = 1000000;
@@ -74,11 +86,11 @@ const LineChart = () => {
       let maxDrawDown = maxDrowDown;
       let previousDifference: number = 10000000;
       let localbalance: number = balance; // <-- initialize with current balance
-  
+
       for (let item of smaArray) {
         // calculate drawdown
         const price = transformedArray.find((e) => e.date === item.date)!.close;
-  
+
         if (stockAtHand > 0) {
           if (price > highestPoint) {
             highestPoint = price;
@@ -91,29 +103,36 @@ const LineChart = () => {
           maxDrawDown = Math.min(maxDrawDown, currentDrawDown); // update the max drawdown
           setMaxDrowDown(maxDrawDown);
         }
-        
+
         // start trading
         let currentDifference =
           item.sma - transformedArray.find((e) => e.date === item.date)!.close;
-        if (previousDifference > 0 && currentDifference < 0 && stockAtHand === 0) {
+        if (
+          previousDifference > 0 &&
+          currentDifference < 0 &&
+          stockAtHand === 0
+        ) {
           // buy stock
           console.log(
             "switch detected at",
             transformedArray.find((e) => e.date === item.date)!.close
           );
           stockAtHand = localbalance / price;
+          await setTransactionsList((e) =>
+            e.concat({
+              stock: ticker,
+              date: item.date,
+              quantity: stockAtHand,
+              type: "buy",
+              price: transformedArray.find((e) => e.date === item.date)!.close,
+              balance: localbalance,
+            })
+          );
+
           localbalance = 0;
-          console.log(
-            "balance divided by price",
-            localbalance / price
-          );
-          setBalance(stockAtHand * price); // Update the capital with the bought stocks
-          console.log(
-            "buy command",
-            item.date,
-            "at a price point of",
-            price
-          );
+          console.log("balance divided by price", localbalance / price);
+          await setBalance(stockAtHand * price); // Update the capital with the bought stocks
+          console.log("buy command", item.date, "at a price point of", price);
           console.log(
             "current balance(after buy)",
             stockAtHand * price,
@@ -132,13 +151,18 @@ const LineChart = () => {
           );
           localbalance = stockAtHand * price;
           stockAtHand = 0;
-          setBalance(localbalance); // Update the capital with the sold stocks
-          console.log(
-            "sell command",
-            item.date,
-            "at a price point of",
-            price
+          await setTransactionsList((e) =>
+            e.concat({
+              stock: ticker,
+              date: item.date,
+              quantity: stockAtHand,
+              type: "sell",
+              price: transformedArray.find((e) => e.date === item.date)!.close,
+              balance: localbalance,
+            })
           );
+          await setBalance(localbalance); // Update the capital with the sold stocks
+          console.log("sell command", item.date, "at a price point of", price);
           console.log(
             "current balance(after sell)",
             localbalance,
@@ -150,9 +174,8 @@ const LineChart = () => {
       }
     }
   };
-  
 
-  const BuyOrSaleRSI = () => {
+  const BuyOrSaleRSI = async () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
       let stockAtHand = 0;
       let lowestPoint: number = 1000000;
@@ -185,20 +208,45 @@ const LineChart = () => {
           stockAtHand = capital / stockPrice;
           console.log("cap divided by price", capital / stockPrice);
           //setCapital(0); // Empty the capital
-          setBalance(stockAtHand * stockPrice); // Update the capital with the bought stocks
+          await setBalance(stockAtHand * stockPrice); // Update the capital with the bought stocks
+          await setTransactionsList((e) =>
+            e.concat({
+              stock: ticker,
+              date: item.date,
+              quantity: stockAtHand,
+              type: "buy",
+              price: transformedArray.find((e) => e.date === item.date)!.close,
+              balance: stockAtHand * stockPrice,
+            })
+          );
           console.log(
             "buy command",
             item.date,
             "at a price point of",
             stockPrice
           );
-        } else if (item.rsi > rsiBuyandSellPoints.sell && transaction === "buy") {
+        } else if (
+          item.rsi > rsiBuyandSellPoints.sell &&
+          transaction === "buy"
+        ) {
           transaction = "sell";
           const stockPrice = transformedArray.find(
             (e) => e.date === item.date
           )!.close;
+          setBalance(stockAtHand * stockPrice);
+          await setTransactionsList((e) =>
+          e.concat({
+            stock: ticker,
+            date: item.date,
+            quantity: 0,
+            type: "sell",
+            price: transformedArray.find((e) => e.date === item.date)!.close,
+            balance: stockAtHand * stockPrice,
+          })
+          );
+          stockAtHand = 0 // Update the capital with the sold stocks
           /*           setCapital(0); // Empty the capital
-           */ setBalance(stockAtHand * stockPrice); // Update the capital with the sold stocks
+           */ 
           console.log(
             "stocks available",
             stockAtHand,
@@ -217,8 +265,11 @@ const LineChart = () => {
   };
 
   const handleButtonClick = () => {
-    if (strategy === "RSI") {BuyOrSaleRSI();} else {BuyOrSaleSMA()}
-    
+    if (strategy === "RSI") {
+      BuyOrSaleRSI();
+    } else {
+      BuyOrSaleSMA();
+    }
   };
 
   useEffect(() => {
@@ -229,7 +280,7 @@ const LineChart = () => {
   useEffect(() => {
     const sma = calculateSMA(transformedArray);
     setSmaArray(sma);
-    console.log("smaData", smaArray)
+    console.log("smaData", smaArray);
   }, [transformedArray]);
 
   useEffect(() => {
@@ -261,7 +312,14 @@ const LineChart = () => {
   useEffect(() => {
     if (transformedArray.length === 0 || rsiArray.length === 0) return;
 
-    drawGraph(transformedArray, rsiArray, smaArray, svgRef, rsiBuyandSellPoints, strategy);
+    drawGraph(
+      transformedArray,
+      rsiArray,
+      smaArray,
+      svgRef,
+      rsiBuyandSellPoints,
+      strategy
+    );
   }, [transformedArray, rsiArray, rsiBuyandSellPoints, strategy]);
 
   const clickedOnSuggestion = (e: Ticker) => {
@@ -272,11 +330,27 @@ const LineChart = () => {
   return (
     <>
       <div className=" flex-col-reverse flex lg:flex-row-reverse sm:flex-col-reverse h-fit items-stretch justify-stretch gap-3">
-        {controlsSection(search, setSearch, clickedOnSuggestion, capital, setCapital, formatter, balance, maxDrowDown, handleButtonClick, rsiBuyandSellPoints, handleChange, strategy, setStrategy, handleStrategy)}
-        <div className="border w-full rounded-lg p-1.5 shadow-xl">
+        {controlsSection(
+          search,
+          setSearch,
+          clickedOnSuggestion,
+          capital,
+          setCapital,
+          formatter,
+          balance,
+          maxDrowDown,
+          handleButtonClick,
+          rsiBuyandSellPoints,
+          handleChange,
+          strategy,
+          setStrategy,
+          handleStrategy
+        )}
+        <div className="border max-w-[100vw] w-full rounded-lg p-1.5 shadow-xl">
           <div>
             <svg ref={svgRef} />
           </div>
+      <TransactionsList transactionsList={transactionsList} />
         </div>
       </div>
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
@@ -285,5 +359,3 @@ const LineChart = () => {
 };
 
 export default LineChart;
-
-
