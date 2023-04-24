@@ -11,8 +11,9 @@ const formatter = new Intl.NumberFormat("en-US", {
     currency: "USD",
     minimumFractionDigits: 2,
   });
+  if (transactionsList.length === 0) return null
   return (
-    <div className='w-full'>
+    <div className='w-full overflow-scroll'>
         <table className="w-full text-sm text-left text-gray-500">
         <thead className="text-xs text-gray-700 uppercase bg-gray-50 ">
             <tr>

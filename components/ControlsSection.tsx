@@ -39,7 +39,7 @@ export default function ControlsSection(
             )
             .map((e: Ticker) => (
               <p
-                className="px-3 text-start"
+                className="px-3 text-start max-w-[200px] border-b border-black"
                 onClick={() => clickedOnSuggestion(e)}
               >
                 {e.name}
