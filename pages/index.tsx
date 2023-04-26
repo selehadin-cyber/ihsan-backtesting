@@ -3,10 +3,13 @@ import Head from 'next/head'
 import Image from 'next/image'
 import LineChart from '../components/LineChart'
 import { Navbar } from '../components/Navbar'
+import { useDarkMode } from '../hooks/userDarkMode'
 
 const Home: NextPage = () => {
+    const [isDark, setIsDark] = useDarkMode();
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
+    <div className="flex min-h-screen flex-col items-center justify-center py-2 bg-white dark:bg-black ">
       <Head>
         <title>Ihsan Backtesting Tool</title>
         <link rel="icon" href="/favicon.ico" />

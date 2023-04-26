@@ -23,7 +23,7 @@ export default function ControlsSection(
   
   console.log(strategy)
   return (
-    <div className="right justify-self-stretch w-full lg:w-1/3 sm:w-full border rounded-lg shadow-xl p-2">
+    <div className="right justify-self-stretch w-full lg:w-1/3 sm:w-full border rounded-lg shadow-xl p-2 my-[29px] lg:my-0">
       <h1>Search a Stock</h1>
       <input
         type="text"

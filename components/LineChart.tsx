@@ -48,7 +48,7 @@ const LineChart = () => {
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<RsiData[]>([]);
   const [smaArray, setSmaArray] = useState<SmaData[]>([]);
-  const [strategy, setStrategy] = useState<"SMA" | "RSI">("SMA");
+  const [strategy, setStrategy] = useState<"SMA" | "RSI">("RSI");
   const [capital, setCapital] = useState(100000);
   const [balance, setBalance] = useState(100000);
   const [transactionsList, setTransactionsList] = useState<Transactions[]>([]);
@@ -66,10 +66,6 @@ const LineChart = () => {
   const handleStrategy = (event: any) => {
     setStrategy(event.target!.value);
   };
-
-  console.log(rsiBuyandSellPoints);
-
-  let transaction = "sell" as Transaction;
 
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -174,7 +170,6 @@ const LineChart = () => {
       }
     }
   };
-
   const BuyOrSaleRSI = async () => {
     if (transformedArray.length !== 0 && rsiArray.length !== 0) {
       let stockAtHand = 0;
@@ -182,6 +177,9 @@ const LineChart = () => {
       let highestPoint = 0;
       let drawDown = 0;
       let maxDrawDown = maxDrowDown;
+
+      let transaction = "sell" as Transaction;
+
       for (let item of rsiArray) {
         if (transaction === "buy") {
           const price = transformedArray.find(
@@ -199,9 +197,11 @@ const LineChart = () => {
           drawDown = Math.min(drawDown, currentDrawDown); // update the current drawdown
           maxDrawDown = Math.min(maxDrawDown, currentDrawDown); // update the max drawdown
           setMaxDrowDown(maxDrawDown);
+          console.log(maxDrawDown);
         }
         if (item.rsi < rsiBuyandSellPoints.buy && transaction === "sell") {
           transaction = "buy";
+          console.log("indide of if function");
           const stockPrice = transformedArray.find(
             (e) => e.date === item.date
           )!.close;
@@ -235,18 +235,18 @@ const LineChart = () => {
           )!.close;
           setBalance(stockAtHand * stockPrice);
           await setTransactionsList((e) =>
-          e.concat({
-            stock: ticker,
-            date: item.date,
-            quantity: 0,
-            type: "sell",
-            price: transformedArray.find((e) => e.date === item.date)!.close,
-            balance: stockAtHand * stockPrice,
-          })
+            e.concat({
+              stock: ticker,
+              date: item.date,
+              quantity: 0,
+              type: "sell",
+              price: transformedArray.find((e) => e.date === item.date)!.close,
+              balance: stockAtHand * stockPrice,
+            })
           );
-          stockAtHand = 0 // Update the capital with the sold stocks
+          stockAtHand = 0; // Update the capital with the sold stocks
           /*           setCapital(0); // Empty the capital
-           */ 
+           */
           console.log(
             "stocks available",
             stockAtHand,
@@ -267,6 +267,7 @@ const LineChart = () => {
   const handleButtonClick = () => {
     if (strategy === "RSI") {
       BuyOrSaleRSI();
+      console.log("rsi selected");
     } else {
       BuyOrSaleSMA();
     }
@@ -280,7 +281,6 @@ const LineChart = () => {
   useEffect(() => {
     const sma = calculateSMA(transformedArray);
     setSmaArray(sma);
-    console.log("smaData", smaArray);
   }, [transformedArray]);
 
   useEffect(() => {
@@ -348,9 +348,9 @@ const LineChart = () => {
         )}
         <div className="border max-w-[100vw] w-full rounded-lg p-1.5 shadow-xl">
           <div>
-            <svg ref={svgRef} />
+            <svg ref={svgRef} className="bg-white dark:bg-black" />
           </div>
-      <TransactionsList transactionsList={transactionsList} />
+          <TransactionsList transactionsList={transactionsList} />
         </div>
       </div>
       {/* <div>{JSON.stringify(transformedArray)}</div> */}
