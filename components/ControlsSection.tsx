@@ -40,7 +40,7 @@ export default function ControlsSection(
               )
               .map((e: Ticker) => (
                 <p
-                  className="px-3 text-start max-w-[200px] border-b border-black"
+                  className="px-3 text-black text-start max-w-[200px] border-b border-black"
                   onClick={() => clickedOnSuggestion(e)}
                 >
                   {e.name.length > 22 ? e.name.substring(0,20) + "..." : e.name}
