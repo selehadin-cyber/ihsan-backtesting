@@ -28,7 +28,7 @@ const drawGraph = (
     .attr("width", w)
     .attr("height", h)
     .call(responsivefy)
-    .style("background", "white")
+    .attr("class", "bg-white dark:bg-black")
     .style("padding-inline", "4px")
     .style("margin-top", "4px");
 
@@ -109,13 +109,15 @@ const drawGraph = (
   d3.select(ref.current)
     .append("g")
     .attr("transform", `translate(0, ${h - p})`)
-    .call(xAxis);
+    .call(xAxis)
+    .attr("class", "text-black dark:text-white");
 
   if (strategy === "RSI") {
     d3.select(ref.current)
       .append("g")
       .attr("transform", `translate(${w - p}, 0)`)
-      .call(yAxis2);
+      .call(yAxis2)
+      .attr("class", "text-black dark:text-white")
   }
 
   d3.select(ref.current)
@@ -129,13 +131,14 @@ const drawGraph = (
         .clone()
         .attr("x2", w - p - p)
         .attr("stroke-opacity", 0.1)
+        .attr("class", "text-black dark:text-white")
     )
     .call((g) =>
       g
         .selectAll(".tick text")
         .attr("x", -20)
         .attr("y", 10)
-        .attr("fill", "currentColor")
+        .attr("class", "text-black dark:text-white")
         .attr("text-anchor", "start")
     );
 
