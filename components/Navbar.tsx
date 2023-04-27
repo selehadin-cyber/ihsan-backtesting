@@ -10,13 +10,13 @@ export const Navbar = () => {
   
   return (
     <>
-      <ul className="flex gap-4 justify-between w-full px-5 mb-5 dark:text-[#CBE4DE]">
+      <ul className="flex gap-4 justify-between w-full px-5 mb-5 sm:px-20 dark:text-[#CBE4DE]">
         <div>
           <p>IhsanBacktesting</p>
         </div>
-        <div className="flex gap-4 justify-between w-1/2 dark:text-[#CBE4DE]">
-          <li>Home</li>
-          <li>About</li>
+        <div className="flex gap-4 justify-between dark:text-[#CBE4DE]">
+          {/* <li>Home</li>
+          <li>About</li> */}
           <label className="cursor-pointer">
             <input
               type="checkbox"

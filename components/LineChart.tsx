@@ -42,13 +42,13 @@ export interface RsiBuyandSellPoints {
 
 const LineChart = () => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [ticker, setTicker] = useState("AAPL");
+  const [ticker, setTicker] = useState("TSLA");
   const [search, setSearch] = useState("");
   const [fetchedData, setFetchedData] = useState<string>();
   const [transformedArray, setTransformedArray] = useState<Transformed[]>([]);
   const [rsiArray, setRsiArray] = useState<RsiData[]>([]);
   const [smaArray, setSmaArray] = useState<SmaData[]>([]);
-  const [strategy, setStrategy] = useState<"SMA" | "RSI">("RSI");
+  const [strategy, setStrategy] = useState<"SMA" | "RSI">("SMA");
   const [capital, setCapital] = useState(100000);
   const [balance, setBalance] = useState(100000);
   const [transactionsList, setTransactionsList] = useState<Transactions[]>([]);
@@ -81,7 +81,7 @@ const LineChart = () => {
       let drawDown = 0;
       let maxDrawDown = maxDrowDown;
       let previousDifference: number = 10000000;
-      let localbalance: number = balance; // <-- initialize with current balance
+      let localbalance: number = capital; // <-- initialize with initial capital
 
       for (let item of smaArray) {
         // calculate drawdown
@@ -264,7 +264,9 @@ const LineChart = () => {
     }
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = async () => {
+    setTransactionsList(prev => [])
+    setBalance(prev => capital)
     if (strategy === "RSI") {
       BuyOrSaleRSI();
       console.log("rsi selected");
