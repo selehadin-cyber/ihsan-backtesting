@@ -23,7 +23,7 @@ export default function Document() {
         <meta
           name="image"
           property="og:image"
-          content="https://firebasestorage.googleapis.com/v0/b/ihsan-home.appspot.com/o/IhsanHome.png?alt=media&token=6bbf4ab6-5ac4-4646-b346-05eb1915dc9f"
+          content="https://github.com/selehadin-cyber/ihsan-backtesting/blob/main/public/Ihsan%20Backtesting%20Tool.png?raw=true"
         />
       </Head>
       <body>
