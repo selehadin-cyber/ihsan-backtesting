@@ -292,7 +292,7 @@ const LineChart = () => {
     } as RequestInit;
 
     fetch(
-      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${ticker}&apikey=ICV6WZMUWQ7GJRGV`,
+      `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${ticker}&apikey=ICV6WZMUWQ7GJRGV`,
       requestOptions
     )
       .then((response) => response.text())
